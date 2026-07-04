@@ -17,6 +17,7 @@ Phase 1 notes:
 import os
 import random
 import time
+import json
 from datetime import datetime
 
 from fastapi import FastAPI, Request
@@ -137,25 +138,26 @@ SERVICE_PORT = int(os.environ.get("SERVICE_PORT", "8000"))
 
 
 def write_service_log(request_id, client_country, entity_value, status_code, processing_time_ms):
-    """
-    TODO: Students must implement structured JSON Lines logging here.
+    log_entry = {
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "request_id": request_id,
+        "client_country": client_country,
+        "service": "match-service",
+        "endpoint": "/api/matches",
+        "entity_type": "match_day",
+        "entity_value": entity_value,
+        "status_code": status_code,
+        "processing_time_ms": processing_time_ms,
+        "event_type": "match_lookup"
+    }
 
-    Required output file: data/service_logs/match_service.log
+    log_json_string = json.dumps(log_entry)
+    log_dir = "data/service_logs"
+    os.makedirs(log_dir, exist_ok=True)
 
-    Append one JSON object per request (one line per entry, no indentation).
-    Required fields:
-      timestamp           ISO-8601 UTC string, e.g. datetime.utcnow().isoformat() + "Z"
-      request_id          value of X-Request-ID header  (passed as argument)
-      client_country      value of X-Client-Country header  (passed as argument)
-      service             "match-service"
-      endpoint            "/api/matches"
-      entity_type         "match_day"
-      entity_value        the requested date string  (passed as argument)
-      status_code         HTTP status code returned  (passed as argument)
-      processing_time_ms  milliseconds elapsed since request start  (passed as argument)
-      event_type          "match_lookup"
-    """
-    pass
+    log_file_path = os.path.join(log_dir, "match_service.log")
+    with open(log_file_path, "a", encoding="utf-8") as f:
+        f.write(log_json_string + "\n")
 
 
 def _apply_scenario(request: Request):
