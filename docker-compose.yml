@@ -1,0 +1,66 @@
+services:
+  # 1. Stadium Service Configuration (Internal Port: 8001)
+  stadium-service:
+    build: ./stadium-service
+    container_name: stadium-service
+    volumes:
+      # Mount host directory to container for persistent service logs
+      - ./data/service_logs:/app/data/service_logs
+    networks:
+      - cloud_project_network
+
+  # 2. Team Service Configuration (Internal Port: 8002)
+  team-service:
+    build: ./team-service
+    container_name: team-service
+    volumes:
+      - ./data/service_logs:/app/data/service_logs
+    networks:
+      - cloud_project_network
+
+  # 3. Match Service Configuration (Internal Port: 8000)
+  match-service:
+    build: ./match-service
+    container_name: match-service
+    volumes:
+      - ./data/service_logs:/app/data/service_logs
+    networks:
+      - cloud_project_network
+
+  # 4. Nginx API Gateway Configuration
+  nginx-gateway:
+    # Changed from direct "nginx:1.27" to bypass ArvanCloud timeout issues
+    image: registry.docker.ir/library/nginx:1.27
+    container_name: nginx-gateway
+    ports:
+      # Map host port 80 to container port 80
+      - "80:80"
+    volumes:
+      # Mount the Nginx configuration file in read-only mode
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # Mount host directory to container for persistent Nginx logs
+      - ./data/nginx:/var/log/nginx
+    depends_on:
+      # Ensure backend services start before Nginx initializes
+      - stadium-service
+      - team-service
+      - match-service
+    networks:
+      - cloud_project_network
+
+  # 5. Spark Structured Streaming Engine
+  spark-streaming:
+    image: bitnami/spark:3.5
+    container_name: spark-streaming-app
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: spark-submit --master "local[*]" spark/streaming_app.py --input data/stream/nginx --checkpoint checkpoints/spark
+    depends_on:
+      - nginx-gateway
+    networks:
+      - cloud_project_network
+
+networks:
+  cloud_project_network:
+    driver: bridge
