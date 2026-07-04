@@ -25,6 +25,8 @@ Phase 1 notes:
 import os
 import random
 import time
+import json
+from datetime import datetime
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -90,25 +92,29 @@ SERVICE_PORT = int(os.environ.get("SERVICE_PORT", "8000"))
 
 def write_service_log(request_id, client_country, entity_type, entity_value, status_code, processing_time_ms):
     """
-    TODO: Students must implement structured JSON Lines logging here.
-
-    Required output file: data/service_logs/stadium_service.log
-
-    Append one JSON object per request (one line per entry, no indentation).
-    Required fields:
-      timestamp           ISO-8601 UTC string, e.g. datetime.utcnow().isoformat() + "Z"
-      request_id          value of X-Request-ID header  (passed as argument)
-      client_country      value of X-Client-Country header  (passed as argument)
-      service             "stadium-service"
-      endpoint            "/api/stadiums"
-      entity_type         "stadium" when querying by name, "city" when querying by city
-                          (passed as argument — already determined for you)
-      entity_value        the requested stadium name or city name  (passed as argument)
-      status_code         HTTP status code returned  (passed as argument)
-      processing_time_ms  milliseconds elapsed since request start  (passed as argument)
-      event_type          "stadium_lookup"
+    Implements structured JSON Lines logging.
+    Appends one JSON object per request to data/service_logs/stadium_service.log.
     """
-    pass
+    log_dir = "data/service_logs"
+    os.makedirs(log_dir, exist_ok=True)
+    
+    log_file_path = os.path.join(log_dir, "stadium_service.log")
+    
+    log_record = {
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "request_id": request_id,
+        "client_country": client_country,
+        "service": "stadium-service",
+        "endpoint": "/api/stadiums",
+        "entity_type": entity_type,
+        "entity_value": entity_value,
+        "status_code": status_code,
+        "processing_time_ms": processing_time_ms,
+        "event_type": "stadium_lookup"
+    }
+    
+    with open(log_file_path, "a") as f:
+        f.write(json.dumps(log_record) + "\n")
 
 
 def _find_stadium(name: str):
