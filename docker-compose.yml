@@ -1,0 +1,41 @@
+services:
+  # 1. Stadium Service Configuration (Internal Port: 8001)
+  stadium-service:
+    build: ./stadium-service
+    container_name: stadium-service
+    volumes:
+      # Mount host directory to container for persistent service logs
+      - ./data/service_logs:/app/data/service_logs
+
+  # 2. Team Service Configuration (Internal Port: 8002)
+  team-service:
+    build: ./team-service
+    container_name: team-service
+    volumes:
+      - ./data/service_logs:/app/data/service_logs
+
+  # 3. Match Service Configuration (Internal Port: 8000)
+  match-service:
+    build: ./match-service
+    container_name: match-service
+    volumes:
+      - ./data/service_logs:/app/data/service_logs
+
+  # 4. Nginx API Gateway Configuration
+  nginx-gateway:
+    # Changed from direct "nginx:1.27" to bypass ArvanCloud timeout issues
+    image: registry.docker.ir/library/nginx:1.27
+    container_name: nginx-gateway
+    ports:
+      # Map host port 80 to container port 80
+      - "80:80"
+    volumes:
+      # Mount the Nginx configuration file in read-only mode
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # Mount host directory to container for persistent Nginx logs
+      - ./data/nginx:/var/log/nginx
+    depends_on:
+      # Ensure backend services start before Nginx initializes
+      - stadium-service
+      - team-service
+      - match-service
