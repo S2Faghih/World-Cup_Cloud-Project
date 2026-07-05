@@ -10,7 +10,6 @@ def emit(key_str, entity, count):
     if len(parts) == 2:
         prefix, country = parts
         
-        # Route to the appropriate final file prefix
         if prefix == "TEAM_REQ":
             print("TEAM_POP\t{},{},{}".format(country, entity, count))
         elif prefix == "MATCH_REQ":
@@ -30,7 +29,6 @@ for line in sys.stdin:
     except ValueError:
         continue
 
-    # If we are looking at the same prefix and country, check if this entity is more popular
     if current_key == key_str:
         if count > max_count:
             max_count = count
@@ -45,6 +43,5 @@ for line in sys.stdin:
         max_count = count
         max_entity = entity
 
-# Don't forget to emit the winner of the very last group!
 if current_key:
     emit(current_key, max_entity, max_count)

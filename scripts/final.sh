@@ -101,7 +101,7 @@ hadoop jar /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar \
     -output /output/job5
 
 echo "--- [JOB 5] Extracting Final Summary JSON ---"
-# We output directly to summary.json because Job 5 formats it cleanly
+
 hdfs dfs -cat /output/job5/part-* > /project/outputs/final/summary.json
 
 echo "--- Full MapReduce Pipeline Complete! ---"

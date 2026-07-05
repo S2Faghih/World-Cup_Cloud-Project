@@ -101,7 +101,6 @@ if len(top_2_teams) >= 2:
 elif len(top_2_teams) == 1:
     predicted_final = top_2_teams[0]
 
-# Build the final JSON object
 summary = {
     "total_requests": total_reqs,
     "most_requested_service": most_req_svc,
@@ -117,5 +116,4 @@ summary = {
     "predicted_final_stadium": top_stadium
 }
 
-# Print the JSON payload (Hadoop will save this to part-00000)
 print(json.dumps(summary, indent=4))
