@@ -8,3 +8,12 @@ outputs/
 # Ignore generated logs (so you don't push 100,000+ lines of logs to GitHub)
 data/nginx/
 data/service_logs/
+
+# Spark Streaming Section
+checkpoints/
+data/stream/
+
+# Python Cache files
+__pycache__/
+*.pyc
+*.pyo

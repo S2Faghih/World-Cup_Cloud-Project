@@ -7,7 +7,7 @@ for line in sys.stdin:
         continue
     
     try:
-        # We read the raw output from Job 3 on HDFS: PREFIX\tcountry,entity,count
+        # TEAM_REQ  Argentina,Atlantis,23
         prefix, data = line.split('\t', 1)
         country, entity, count = data.split(',')
         
