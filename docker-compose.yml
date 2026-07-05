@@ -50,12 +50,12 @@ services:
 
   # 5. Spark Structured Streaming Engine
   spark-streaming:
-    image: bitnami/spark:3.5
+    image: apache/spark:3.5.1
     container_name: spark-streaming-app
     volumes:
       - .:/app
     working_dir: /app
-    command: spark-submit --master "local[*]" spark/streaming_app.py --input data/stream/nginx --checkpoint checkpoints/spark
+    command: /opt/spark/bin/spark-submit --master "local[*]" spark/streaming_app.py --input data/stream/nginx --checkpoint checkpoints/spark
     depends_on:
       - nginx-gateway
     networks:
