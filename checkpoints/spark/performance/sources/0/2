@@ -1,8 +1,0 @@
-v1
-{"path":"file:///app/data/stream/nginx/batch_0011.jsonl","timestamp":1783205231233,"batchId":2}
-{"path":"file:///app/data/stream/nginx/batch_0012.jsonl","timestamp":1783205233233,"batchId":2}
-{"path":"file:///app/data/stream/nginx/batch_0013.jsonl","timestamp":1783205235234,"batchId":2}
-{"path":"file:///app/data/stream/nginx/batch_0014.jsonl","timestamp":1783205237235,"batchId":2}
-{"path":"file:///app/data/stream/nginx/batch_0015.jsonl","timestamp":1783205239236,"batchId":2}
-{"path":"file:///app/data/stream/nginx/batch_0016.jsonl","timestamp":1783205241236,"batchId":2}
-{"path":"file:///app/data/stream/nginx/batch_0017.jsonl","timestamp":1783205243238,"batchId":2}
