@@ -1,0 +1,130 @@
+# --- MATCH SERVICE ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: match-service
+  namespace: cc-project
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: match-service
+  template:
+    metadata:
+      labels:
+        app: match-service
+    spec:
+      containers:
+      - name: match-service
+        image: match-service:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: service-logs
+          mountPath: /app/data/service_logs
+      volumes:
+      - name: service-logs
+        persistentVolumeClaim:
+          claimName: service-logs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: match-service
+  namespace: cc-project
+spec:
+  selector:
+    app: match-service
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+
+# --- TEAM SERVICE ---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: team-service
+  namespace: cc-project
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: team-service
+  template:
+    metadata:
+      labels:
+        app: team-service
+    spec:
+      containers:
+      - name: team-service
+        image: team-service:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: service-logs
+          mountPath: /app/data/service_logs
+      volumes:
+      - name: service-logs
+        persistentVolumeClaim:
+          claimName: service-logs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: team-service
+  namespace: cc-project
+spec:
+  selector:
+    app: team-service
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+
+# --- STADIUM SERVICE ---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stadium-service
+  namespace: cc-project
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stadium-service
+  template:
+    metadata:
+      labels:
+        app: stadium-service
+    spec:
+      containers:
+      - name: stadium-service
+        image: stadium-service:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: service-logs
+          mountPath: /app/data/service_logs
+      volumes:
+      - name: service-logs
+        persistentVolumeClaim:
+          claimName: service-logs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stadium-service
+  namespace: cc-project
+spec:
+  selector:
+    app: stadium-service
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000

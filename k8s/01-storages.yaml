@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cc-project
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nginx-logs-pvc
+  namespace: cc-project
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: service-logs-pvc
+  namespace: cc-project
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
