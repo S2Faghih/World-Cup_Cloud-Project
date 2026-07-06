@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mapreduce-pipeline
+  namespace: cc-project
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: hadoop
+          image: hadoop-streaming:1.0
+          imagePullPolicy: IfNotPresent
+          command: ["bash", "/project/scripts/final.sh"]
+          volumeMounts:
+            # Mounts the logs as inputs
+            - name: data
+              mountPath: /project/data
+            # Mounts the outputs sub-directory
+            - name: data
+              mountPath: /project/outputs
+              subPath: outputs
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: nginx-logs-pvc

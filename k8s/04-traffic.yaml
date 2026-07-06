@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: traffic-generator-job
+  namespace: cc-project
+spec:
+  template:
+    spec:
+      containers:
+      - name: generator
+        image: traffic-generator:2.0
+        imagePullPolicy: IfNotPresent
+        args: ["--count", "1500", "--url", "http://nginx-gateway:80"]
+      restartPolicy: Never

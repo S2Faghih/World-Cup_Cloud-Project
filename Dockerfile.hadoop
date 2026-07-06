@@ -1,0 +1,15 @@
+FROM --platform=linux/amd64 registry.docker.ir/bde2020/hadoop-base:2.0.0-hadoop3.2.1-java8
+
+# 2. Fix the broken Debian Stretch repository links
+RUN sed -i s/deb.debian.org/archive.debian.org/g /etc/apt/sources.list && \
+    sed -i s/security.debian.org/archive.debian.org/g /etc/apt/sources.list && \
+    sed -i '/stretch-updates/d' /etc/apt/sources.list
+
+RUN apt-get update && apt-get install -y python3
+
+COPY mapreduce/ /project/mapreduce/
+COPY scripts/ /project/scripts/
+
+RUN chmod +x /project/scripts/final.sh
+
+WORKDIR /project

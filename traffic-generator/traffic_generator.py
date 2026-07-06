@@ -1,16 +1,8 @@
-"""
-Traffic Generator for Cloud Final Project (Phase 1 & 2)
-Simulates user traffic hitting the Nginx API Gateway.
-"""
 import requests
 import random
 import uuid
 import time
 import argparse
-import os
-
-# Use environment variable for K8s compatibility, fallback to localhost for local testing
-BASE_URL = os.getenv("GATEWAY_URL", "http://localhost")
 
 # Simulate different countries for X-Client-Country header
 COUNTRIES = ["Iran", "Germany", "Argentina", "Brazil", "USA", "France", "Japan", "Qatar"]
@@ -23,7 +15,7 @@ TEAMS = ["Argentina", "Brazil", "France", "Iran", "Germany", "Atlantis"]
 MATCH_DATES = ["2026-06-12", "2026-06-25", "2026-07-04", "2026-13-99", ""] 
 STADIUMS = ["New York New Jersey Stadium", "Dallas Stadium", "Lusail Stadium", "Unknown Stadium"] 
 
-def generate_request():
+def generate_request(base_url):
     """Generates a single randomized request to the Nginx Gateway."""
     country = random.choice(COUNTRIES)
     scenario = random.choice(SCENARIOS)
@@ -43,13 +35,13 @@ def generate_request():
         team_query = random.choice(TEAMS)
 
     if target == "team":
-        url = f"{BASE_URL}/api/teams?name={team_query}"
+        url = f"{base_url}/api/teams?name={team_query}"
     elif target == "match":
         date = random.choice(MATCH_DATES)
-        url = f"{BASE_URL}/api/matches?date={date}"
+        url = f"{base_url}/api/matches?date={date}"
     else:
         stadium = random.choice(STADIUMS)
-        url = f"{BASE_URL}/api/stadiums?name={stadium}"
+        url = f"{base_url}/api/stadiums?name={stadium}"
 
     try:
         response = requests.get(url, headers=headers, timeout=5)
@@ -60,14 +52,13 @@ def generate_request():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate World Cup API traffic.")
     parser.add_argument("--count", type=int, default=1500, help="Number of requests to generate")
+    parser.add_argument("--url", type=str, default="http://localhost", help="Base URL of the Nginx Gateway")
     args = parser.parse_args()
     
-    TOTAL_REQUESTS = args.count
+    print(f"Starting Traffic Generator: Sending {args.count} requests to {args.url}...")
     
-    print(f"Starting Traffic Generator: Sending {TOTAL_REQUESTS} requests to {BASE_URL}...")
-    
-    for i in range(TOTAL_REQUESTS):
-        generate_request()
+    for i in range(args.count):
+        generate_request(args.url)
         time.sleep(0.01)
         
     print("Traffic generation completed successfully!")
