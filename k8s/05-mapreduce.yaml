@@ -10,18 +10,26 @@ spec:
       restartPolicy: Never
       containers:
         - name: hadoop
-          image: hadoop-streaming:1.0
+          image: hadoop-streaming:4.0
           imagePullPolicy: IfNotPresent
-          command: ["bash", "/project/scripts/final.sh"]
+          command: ["bash", "/project/scripts/phase2_final.sh"]
           volumeMounts:
-            # Mounts the logs as inputs
-            - name: data
+            # 1. Mount the Nginx hard drive (contains nginx_access.log)
+            - name: nginx-data
               mountPath: /project/data
-            # Mounts the outputs sub-directory
-            - name: data
+            
+            # 2. Mount the Service hard drive exactly where the script expects it
+            - name: service-data
+              mountPath: /project/data/service_logs
+            
+            # 3. Mount the outputs folder back to the Nginx hard drive
+            - name: nginx-data
               mountPath: /project/outputs
               subPath: outputs
       volumes:
-        - name: data
+        - name: nginx-data
           persistentVolumeClaim:
             claimName: nginx-logs-pvc
+        - name: service-data
+          persistentVolumeClaim:
+            claimName: service-logs-pvc
