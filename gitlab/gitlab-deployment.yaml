@@ -26,6 +26,13 @@ spec:
           value: |
             external_url 'http://gitlab.cc-project.svc.cluster.local:8929'
             gitlab_rails['gitlab_shell_ssh_port'] = 30022
+        volumeMounts:
+        - name: gitlab-data
+          mountPath: /var/opt/gitlab
+      volumes:
+      - name: gitlab-data
+        persistentVolumeClaim:
+          claimName: gitlab-data-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -45,3 +52,15 @@ spec:
     targetPort: 22
     nodePort: 30022
     name: ssh
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gitlab-data-pvc
+  namespace: cc-project
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

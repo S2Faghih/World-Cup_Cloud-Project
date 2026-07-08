@@ -4,7 +4,7 @@ image:
 
 gitlabUrl: "http://gitlab.cc-project.svc.cluster.local:8929"
 
-runnerToken: "MY_GLRT_TOKEN_HERE"
+runnerToken: "glrt-uSyrMX7NN5sZuKphHdcL"
 
 # Core configurations for the GitLab Runner agent execution environment
 runners:
