@@ -27,7 +27,7 @@ test-logic:
 build-match:
   stage: build
   image:
-    name: gcr.io/kaniko-project/executor:debug
+    name: registry.docker.ir/kanikoproject/executor:debug
     entrypoint: [""]
   script:
     - /kaniko/executor --context $CI_PROJECT_DIR/match-service --dockerfile $CI_PROJECT_DIR/match-service/Dockerfile --destination $REGISTRY/match-service:latest
@@ -35,7 +35,7 @@ build-match:
 build-team:
   stage: build
   image:
-    name: gcr.io/kaniko-project/executor:debug
+    name: registry.docker.ir/kanikoproject/executor:debug
     entrypoint: [""]
   script:
     - /kaniko/executor --context $CI_PROJECT_DIR/team-service --dockerfile $CI_PROJECT_DIR/team-service/Dockerfile --destination $REGISTRY/team-service:latest
@@ -43,7 +43,7 @@ build-team:
 build-stadium:
   stage: build
   image:
-    name: gcr.io/kaniko-project/executor:debug
+    name: registry.docker.ir/kanikoproject/executor:debug
     entrypoint: [""]
   script:
     - /kaniko/executor --context $CI_PROJECT_DIR/stadium-service --dockerfile $CI_PROJECT_DIR/stadium-service/Dockerfile --destination $REGISTRY/stadium-service:latest
@@ -51,7 +51,7 @@ build-stadium:
 build-traffic:
   stage: build
   image:
-    name: gcr.io/kaniko-project/executor:debug
+    name: registry.docker.ir/kanikoproject/executor:debug
     entrypoint: [""]
   script:
     - /kaniko/executor --context $CI_PROJECT_DIR/traffic-generator --dockerfile $CI_PROJECT_DIR/traffic-generator/Dockerfile --destination $REGISTRY/traffic-generator:latest
@@ -59,7 +59,7 @@ build-traffic:
 build-hadoop:
   stage: build
   image:
-    name: gcr.io/kaniko-project/executor:debug
+    name: registry.docker.ir/kanikoproject/executor:debug
     entrypoint: [""]
   script:
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile.hadoop --destination $REGISTRY/hadoop-streaming:latest
