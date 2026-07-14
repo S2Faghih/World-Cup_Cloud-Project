@@ -9,12 +9,14 @@ docker build -t team-service:1.0 ./team-service
 docker build -t stadium-service:1.0 ./stadium-service
 docker build -t traffic-generator:2.0 ./traffic-generator
 docker build -t hadoop-streaming:4.0 -f Dockerfile.hadoop .
+docker build -t spark-streaming:1.0 -f Dockerfile.spark .
 
 minikube image load match-service:1.0
 minikube image load team-service:1.0
 minikube image load stadium-service:1.0
 minikube image load traffic-generator:2.0
 minikube image load hadoop-streaming:4.0
+minikube image load spark-streaming:1.0
 
 -------
 kubectl apply -f k8s/01-base.yaml
@@ -36,3 +38,14 @@ kubectl logs -f job.batch/mapreduce-pipeline -n cc-project
 
 and after bash finish its job, use this last command to see final summary.json:
 kubectl exec -it deployment/nginx-gateway -n cc-project -- cat /var/log/nginx/outputs/final/summary.json
+
+-----
+see log of spark with this commands:
+kubectl logs -f deployment/spark-streaming-app -n cc-project
+
+OR first run traffic generator again and then see logs in live:
+kubectl delete -f k8s/04-traffic-generator.yaml
+kubectl apply -f k8s/04-traffic-generator.yaml
+
+kubectl logs -f deployment/spark-streaming-app -n cc-project
+-----

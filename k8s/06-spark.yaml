@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-streaming-app
+  namespace: cc-project
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-streaming-app
+  template:
+    metadata:
+      labels:
+        app: spark-streaming-app
+    spec:
+      containers:
+      - name: spark
+        image: spark-streaming:1.0
+        imagePullPolicy: IfNotPresent
+        command: 
+          - "/opt/spark/bin/spark-submit"
+          - "--master"
+          - "local[*]"
+          - "spark/streaming_app.py"
+          - "--input"
+          - "/var/log/nginx"
+          - "--checkpoint"
+          - "/app/checkpoints/spark"
+        volumeMounts:
+        # 1. Mount the live Nginx logs for streaming
+        - name: nginx-logs
+          mountPath: /var/log/nginx
+        # 2. Mount the checkpoint drive to save progress
+        - name: spark-checkpoints
+          mountPath: /app/checkpoints
+      volumes:
+      - name: nginx-logs
+        persistentVolumeClaim:
+          claimName: nginx-logs-pvc
+      - name: spark-checkpoints
+        persistentVolumeClaim:
+          claimName: spark-checkpoint-pvc
