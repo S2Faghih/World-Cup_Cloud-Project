@@ -1,0 +1,18 @@
+image:
+  registry: "registry.docker.ir"
+  image: "gitlab/gitlab-runner"
+
+gitlabUrl: "http://192.168.49.2:30880"
+
+runnerRegistrationToken: "your_tokern"
+
+runners:
+  config: |
+    [[runners]]
+      [runners.kubernetes]
+        namespace = "cc-project"
+        image = "registry.docker.ir/library/ubuntu:22.04"
+        privileged = true
+        image_pull_policies = ["if-not-present"]
+        allowed_pull_policies = ["if-not-present", "always", "never"]
+        helper_image = "registry.docker.ir/gitlab/gitlab-runner-helper:x86_64-v16.11.2"

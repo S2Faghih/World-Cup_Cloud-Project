@@ -1,0 +1,55 @@
+minikube start --memory=8192 --cpus=4
+kubectl create namespace cc-project
+
+# اعمال فایلهای پایه
+kubectl apply -f project-pvc.yaml -n cc-project
+kubectl apply -f gitlab-deployment.yaml -n cc-project
+
+
+#تنظیم پسورد واسه گیت لب 
+kubectl exec -it deploy/gitlab -n cc-project -- gitlab-rails console (یکم طول میکشه ترمینالش بیاد)
+user = User.find_by_username('root')
+user.password = 'هر پسوردی دوس داری'
+user.save!
+exit
+
+یه دستور minikube ip بزن
+توی مرورگر برو توی این آدرس: http://<Minikube-IP>:30880
+user: root
+password: همونی که ست کردی خودت
+
+یه پروژه جدید بساز از پایین تیک readme رو بردار الکی readme نسازه
+اسم پروژه: cloud-project
+
+وقتی پروژه ساختی برو به: Settings -> CI/CD -> Runner
+
+رانر بساز اسمش هم این باشه: k8s-runner
+واسه ساخت رانر عکس تنظیماتشو توی تلگرام میدم
+
+همون موقع که رانر ساخته میشه یه توکن بهت میده فقط هم همین یک بار. پس ذخیرش کن
+
+بعد فایل runner-values رو طبق عکسی که توی تلگرام بهت میدم درست کن براساس اطلاعات خودت
+
+حالا این دستورات رو توی ترمینال بزن
+helm repo add gitlab https://charts.gitlab.io
+helm repo update
+helm install gitlab-runner gitlab/gitlab-runner -n cc-project -f gitlab/runner-values.yaml
+kubectl create rolebinding default-admin --clusterrole=admin --serviceaccount=cc-project:default -n cc-project
+
+# ارسال به گیت لب
+git remote add gitlab http://<Minikube-IP>:30880/root/cloud-project.git
+git push -u gitlab main (اسم برنچت ممکنه فرق داشته باشه. اسم برنج خودتو وارد کن)
+
+
+درصورت گیرکردن پایپلاین باید دستی پول کنی ایمیج ها رو:
+docker pull registry.docker.ir/library/python:3.9-slim
+docker pull registry.docker.ir/library/ubuntu:22.04
+docker pull gcr.io/kaniko-project/executor:debug
+docker pull registry.docker.ir/bitnami/kubectl:latest
+docker pull registry.docker.ir/gitlab/gitlab-runner-helper:x86_64-v16.11.2
+
+minikube image load registry.docker.ir/library/python:3.9-slim
+minikube image load registry.docker.ir/library/ubuntu:22.04
+minikube image load gcr.io/kaniko-project/executor:debug
+minikube image load registry.docker.ir/bitnami/kubectl:latest
+minikube image load registry.docker.ir/gitlab/gitlab-runner-helper:x86_64-v16.11.2
