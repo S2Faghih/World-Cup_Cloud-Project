@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: spark
-        image: spark-streaming:1.0
+        image: spark-streaming:2.1 
         imagePullPolicy: IfNotPresent
         command: 
           - "/opt/spark/bin/spark-submit"
@@ -23,14 +23,12 @@ spec:
           - "local[*]"
           - "spark/streaming_app.py"
           - "--input"
-          - "/var/log/nginx"
+          - "/var/log/nginx/stream" 
           - "--checkpoint"
           - "/app/checkpoints/spark"
         volumeMounts:
-        # 1. Mount the live Nginx logs for streaming
         - name: nginx-logs
           mountPath: /var/log/nginx
-        # 2. Mount the checkpoint drive to save progress
         - name: spark-checkpoints
           mountPath: /app/checkpoints
       volumes:
