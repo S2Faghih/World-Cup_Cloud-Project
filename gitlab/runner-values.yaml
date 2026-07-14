@@ -4,7 +4,7 @@ image:
 
 gitlabUrl: "http://192.168.49.2:30880"
 
-runnerRegistrationToken: "your_tokern"
+runnerRegistrationToken: "glrt-qW_DKzar3tk5ipTfqGVp"
 
 runners:
   config: |
