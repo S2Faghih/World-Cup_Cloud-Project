@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-feeder
+  namespace: cc-project
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-feeder
+  template:
+    metadata:
+      labels:
+        app: log-feeder
+    spec:
+      containers:
+      - name: feeder
+        # We can reuse your Spark image since it already has Python and the scripts!
+        image: spark-streaming:2.0
+        imagePullPolicy: IfNotPresent
+        # This automatically runs the script instead of starting Spark
+        command: 
+          - "python3"
+          - "spark/log_feeder.py"
+          - "--source"
+          - "/var/log/nginx/nginx_access.log"
+          - "--output"
+          - "/var/log/nginx/stream"
+        volumeMounts:
+        - name: nginx-logs
+          mountPath: /var/log/nginx
+      volumes:
+      - name: nginx-logs
+        persistentVolumeClaim:
+          claimName: nginx-logs-pvc

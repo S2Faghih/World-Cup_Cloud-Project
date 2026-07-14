@@ -25,7 +25,8 @@ spec:
         env:
         - name: GITLAB_OMNIBUS_CONFIG
           value: |
-            external_url 'http://gitlab.cc-project.svc.cluster.local:8929'
+            external_url 'http://192.168.49.2:30880'
+            nginx['listen_port'] = 8929
             gitlab_rails['gitlab_shell_ssh_port'] = 30022
         volumeMounts:
         - name: gitlab-data
@@ -33,7 +34,7 @@ spec:
       volumes:
       - name: gitlab-data
         persistentVolumeClaim:
-          claimName: gitlab-data-pvc
+          claimName: gitlab-data-pvc-3
 ---
 apiVersion: v1
 kind: Service
@@ -57,7 +58,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: gitlab-data-pvc
+  name: gitlab-data-pvc-3
   namespace: cc-project
 spec:
   accessModes:

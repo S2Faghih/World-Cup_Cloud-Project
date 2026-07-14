@@ -2,9 +2,9 @@ image:
   registry: "registry.docker.ir"
   image: "gitlab/gitlab-runner"
 
-gitlabUrl: "http://gitlab.cc-project.svc.cluster.local:8929"
+gitlabUrl: "http://192.168.49.2:30880"
 
-runnerToken: "glrt-ymAsysFWqHyEEyQvoF8s"
+runnerRegistrationToken: "your_tokern"
 
 runners:
   config: |
@@ -14,9 +14,5 @@ runners:
         image = "registry.docker.ir/library/ubuntu:22.04"
         privileged = true
         image_pull_policies = ["if-not-present"]
-        helper_image = "registry.docker.ir/gitlab/gitlab-runner-helper:x86_64-v19.1.1"
-
-hostAliases:
-  - ip: "192.168.49.2"
-    hostnames:
-      - "gitlab.cc-project.svc.cluster.local"
+        allowed_pull_policies = ["if-not-present", "always", "never"]
+        helper_image = "registry.docker.ir/gitlab/gitlab-runner-helper:x86_64-v16.11.2"

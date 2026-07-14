@@ -1,20 +1,20 @@
 import argparse
+import os
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, col, when, regexp_extract, avg, count, desc
+from pyspark.sql.functions import from_json, col, when, regexp_extract, avg, count, desc, window
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, TimestampType
 
 def start_world_cup_streaming(input_path, checkpoint_path):
-    # Initialize PySpark Session optimized for multi-core processing inside Docker
+    os.makedirs(input_path, exist_ok=True)
+
     spark = SparkSession.builder \
         .appName("WorldCupLiveAnalytics") \
         .master("local[*]") \
         .config("spark.sql.streaming.forceDeleteTempCheckpointLocation", "true") \
         .getOrCreate()
 
-    # Lower logging verbosity to clean up the output terminal screen
     spark.sparkContext.setLogLevel("WARN")
 
-    # Schema configuration mapping perfectly to your nginx.conf json_logs format
     nginx_schema = StructType([
         StructField("timestamp", StringType(), True),
         StructField("request_id", StringType(), True),
@@ -29,71 +29,81 @@ def start_world_cup_streaming(input_path, checkpoint_path):
         StructField("user_agent", StringType(), True)
     ])
 
-    # Instantiate the streaming source for incoming micro-batch files
     raw_stream = spark.readStream \
         .schema(nginx_schema) \
         .json(input_path)
 
-    # Clean data & cast types safely
-    # WARNING FIX: Explicitly casting request_time_sec to DoubleType to bypass null values
+    # 1. Cast types and handle time
+    # 2. FIX: Only extract team names if the path actually hits the teams API
     parsed_stream = raw_stream \
         .withColumn("event_time", col("timestamp").cast(TimestampType())) \
         .withColumn("latency", col("request_time_sec").cast(DoubleType())) \
         .withColumn("is_error", when(col("status_code") >= 400, 1).otherwise(0)) \
-        .withColumn("queried_team", regexp_extract(col("path"), r"name=([^&]+)", 1))
+        .withColumn("queried_team", 
+                    when(col("path").contains("/api/teams"), regexp_extract(col("path"), r"name=([^&]+)", 1))
+                    .otherwise(""))
 
-    # Metric Requirement A, B & E: Request counts, live error rate, and average response time
-    performance_metrics = parsed_stream \
-        .groupBy("service") \
+    # Add watermark to handle delayed data and prevent memory leaks over time
+    watermarked_stream = parsed_stream.withWatermark("event_time", "1 minute")
+
+    # Metric Req A, B & E: Live counts, latency, and errors grouped by 10-SECOND WINDOWS
+    performance_metrics = watermarked_stream \
+        .groupBy(window(col("event_time"), "10 seconds"), "service") \
         .agg(
             count("request_id").alias("live_request_count"),
             avg("latency").alias("avg_response_time_sec"),
             (count(when(col("is_error") == 1, True)) / count("request_id")).alias("live_error_rate")
-        )
+        ) \
+        .orderBy(desc("window"), desc("live_request_count"))
 
-    # Metric Requirement C: High traffic endpoints/paths monitored in real-time
-    traffic_endpoints = parsed_stream \
-        .groupBy("path") \
+    # Metric Req C: High traffic endpoints in 10-second windows
+    traffic_endpoints = watermarked_stream \
+        .groupBy(window(col("event_time"), "10 seconds"), "path") \
         .count() \
-        .sort(desc("count"))
+        .orderBy(desc("window"), desc("count"))
 
-    # Metric Requirement D: Most popular queried team by country in the live data stream
-    popular_teams_country = parsed_stream \
+    # Metric Req D: Popular teams by country (filtering out empty/stadium queries)
+    popular_teams_country = watermarked_stream \
         .filter(col("queried_team") != "") \
-        .groupBy("client_country", "queried_team") \
+        .groupBy(window(col("event_time"), "10 seconds"), "client_country", "queried_team") \
         .count() \
-        .sort(desc("count"))
+        .orderBy(desc("window"), desc("count"))
 
-    # Console Sink for Performance Metrics (Volume, Latency, Error Rates)
+    # --- SINKS ---
+    # Trigger processing every 10 seconds as required by project.md
+    
     query_perf = performance_metrics.writeStream \
         .outputMode("complete") \
         .format("console") \
+        .option("truncate", "false") \
         .option("checkpointLocation", f"{checkpoint_path}/performance") \
+        .trigger(processingTime='10 seconds') \
         .start()
 
-    # Console Sink for Live High-Traffic Endpoints
     query_endpoints = traffic_endpoints.writeStream \
         .outputMode("complete") \
         .format("console") \
+        .option("truncate", "false") \
         .option("checkpointLocation", f"{checkpoint_path}/endpoints") \
+        .trigger(processingTime='10 seconds') \
         .start()
 
-    # Console Sink for Fan Demographics (Popular Teams by Country Breakdown)
     query_teams = popular_teams_country.writeStream \
         .outputMode("complete") \
         .format("console") \
+        .option("truncate", "false") \
         .option("checkpointLocation", f"{checkpoint_path}/demographics") \
+        .trigger(processingTime='10 seconds') \
         .start()
 
-    # Maintain live streaming active threads
     query_perf.awaitTermination()
     query_endpoints.awaitTermination()
     query_teams.awaitTermination()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Spark Structured Streaming World Cup Analytics Engine")
-    parser.add_argument("--input", type=str, default="data/stream/nginx", help="Streaming batch directory")
-    parser.add_argument("--checkpoint", type=str, default="checkpoints/spark", help="Checkpoint directory")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", type=str, default="data/stream/nginx")
+    parser.add_argument("--checkpoint", type=str, default="checkpoints/spark")
     args = parser.parse_args()
 
     start_world_cup_streaming(input_path=args.input, checkpoint_path=args.checkpoint)

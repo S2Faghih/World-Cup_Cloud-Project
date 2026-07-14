@@ -1,0 +1,16 @@
+# Use the exact Spark image from your Docker Compose
+FROM apache/spark:3.5.1
+
+# Switch to root to set up directories and permissions
+USER root
+
+WORKDIR /app
+
+# Copy your Spark scripts into the container
+COPY spark/ ./spark/
+
+# Ensure the spark user owns the application files
+RUN chown -R spark:spark /app
+
+# Switch back to the standard spark user for execution
+USER spark
