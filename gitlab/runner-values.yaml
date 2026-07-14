@@ -4,17 +4,19 @@ image:
 
 gitlabUrl: "http://gitlab.cc-project.svc.cluster.local:8929"
 
-runnerToken: "glrt-6RYqaiAxbAfY1bgTqU7q"
+runnerToken: "glrt-ymAsysFWqHyEEyQvoF8s"
 
-# Core configurations for the GitLab Runner agent execution environment
 runners:
   config: |
     [[runners]]
       [runners.kubernetes]
         namespace = "cc-project"
-        # Mirror for the temporary job pods
         image = "registry.docker.ir/library/ubuntu:22.04"
         privileged = true
         image_pull_policies = ["if-not-present"]
-        # Explicitly route the helper image through the mirror registry
         helper_image = "registry.docker.ir/gitlab/gitlab-runner-helper:x86_64-v19.1.1"
+
+hostAliases:
+  - ip: "192.168.49.2"
+    hostnames:
+      - "gitlab.cc-project.svc.cluster.local"
