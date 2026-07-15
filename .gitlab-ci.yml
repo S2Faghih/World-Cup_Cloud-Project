@@ -72,7 +72,7 @@ build-hadoop:
     pull_policy: if-not-present
   script:
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile.hadoop --no-push --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTPS_PROXY --insecure-registry registry.cc-project.svc.cluster.local:5000 --skip-tls-verify-pull
-    
+
 # ----------------- 3. DEPLOY -----------------
 deploy-services:
   stage: deploy
@@ -178,25 +178,48 @@ generate-report:
               command: ["python3", "-c"]
               args:
                 - |
-                  import json
-                  with open("/project/outputs/final/summary.json", 'r') as f:
-                      data = json.load(f)
-                  html = f"""
-                  <html><head><title>Cloud Final Dashboard</title></head>
-                  <body style='font-family: Arial; padding: 20px;'>
-                      <h2>CC Project Final Report</h2>
-                      <p><b>Total Requests:</b> {data['total_requests']}</p>
-                      <p><b>Highest Error Rate:</b> {data['error_rates'][0][0]} ({data['error_rates'][0][1]:.2f}%)</p>
-                      <hr>
-                      <h3>Popular Teams by Country</h3>
-                      <ul>
-                      {''.join([f"<li>{c}: {t[0][0]}</li>" for c, t in data['popular_team_by_country'].items()])}
-                      </ul>
-                  </body></html>
-                  """
-                  with open("/project/outputs/final/index.html", 'w') as out:
-                      out.write(html)
-                  print("Dashboard successfully written to PVC!")
+                  import json, sys
+                  try:
+                      with open("/project/outputs/final/summary.json", 'r') as f:
+                          data = json.load(f)
+                      
+                      # Safe extraction of error rates to prevent KeyError
+                      err_rate_str = "N/A"
+                      if "error_rates" in data and len(data["error_rates"]) > 0:
+                          try:
+                              err_rate_str = f"{data['error_rates'][0][0]} ({data['error_rates'][0][1]:.2f}%)"
+                          except Exception:
+                              err_rate_str = str(data["error_rates"])
+                      
+                      # Safe dynamically building list items to prevent index errors
+                      team_items = ""
+                      if "popular_team_by_country" in data:
+                          for country, teams in data['popular_team_by_country'].items():
+                              if isinstance(teams, list) and len(teams) > 0:
+                                  team_name = teams[0][0] if isinstance(teams[0], list) else teams[0]
+                              else:
+                                  team_name = str(teams)
+                              team_items += f"<li>{country}: {team_name}</li>"
+
+                      html = f"""
+                      <html><head><title>Cloud Final Dashboard</title></head>
+                      <body style='font-family: Arial; padding: 20px;'>
+                          <h2>CC Project Final Report</h2>
+                          <p><b>Total Requests:</b> {data.get('total_requests', 'N/A')}</p>
+                          <p><b>Highest Error Rate:</b> {err_rate_str}</p>
+                          <hr>
+                          <h3>Popular Teams by Country</h3>
+                          <ul>
+                          {team_items}
+                          </ul>
+                      </body></html>
+                      """
+                      with open("/project/outputs/final/index.html", 'w') as out:
+                          out.write(html)
+                      print("Dashboard successfully written to PVC!")
+                  except Exception as e:
+                      print(f"PYTHON ERROR: {str(e)}")
+                      sys.exit(1)
               volumeMounts:
               - name: data
                 mountPath: /project
@@ -207,7 +230,7 @@ generate-report:
     - kubectl delete job report-job -n $NS --ignore-not-found=true
     - kubectl apply -f report-job.yaml -n $NS
     - kubectl wait --for=condition=complete job/report-job -n $NS --timeout=120s
-
+    
 # ----------------- 8. PUBLISH -----------------
 publish-dashboard:
   stage: publish
