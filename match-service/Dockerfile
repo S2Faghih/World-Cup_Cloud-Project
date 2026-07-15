@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM registry.cc-project.svc.cluster.local:5000/python:3.10-slim
 WORKDIR /app
 
 COPY requirements.txt .

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 registry.docker.ir/bde2020/hadoop-base:2.0.0-hadoop3.2.1-java8
+FROM registry.cc-project.svc.cluster.local:5000/bde2020/hadoop-base:2.0.0-hadoop3.2.1-java8
 
 # 2. Fix the broken Debian Stretch repository links
 RUN sed -i s/deb.debian.org/archive.debian.org/g /etc/apt/sources.list && \
