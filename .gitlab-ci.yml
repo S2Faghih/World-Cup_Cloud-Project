@@ -36,7 +36,7 @@ build-match:
     pull_policy: if-not-present
   script:
     - /kaniko/executor --context $CI_PROJECT_DIR/match-service --dockerfile $CI_PROJECT_DIR/match-service/Dockerfile --no-push --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTPS_PROXY --insecure-registry registry.cc-project.svc.cluster.local:5000 --skip-tls-verify-pull
-    
+
 build-team:
   stage: build
   image:
@@ -62,7 +62,7 @@ build-traffic:
     entrypoint: [""]
     pull_policy: if-not-present
   script:
-    - /kaniko/executor --context $CI_PROJECT_DIR/traffic-service --dockerfile $CI_PROJECT_DIR/traffic-service/Dockerfile --no-push --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTPS_PROXY --insecure-registry registry.cc-project.svc.cluster.local:5000 --skip-tls-verify-pull
+    - /kaniko/executor --context $CI_PROJECT_DIR/traffic-generator --dockerfile $CI_PROJECT_DIR/traffic-generator/Dockerfile --no-push --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTPS_PROXY --insecure-registry registry.cc-project.svc.cluster.local:5000 --skip-tls-verify-pull
 
 build-hadoop:
   stage: build
@@ -71,7 +71,8 @@ build-hadoop:
     entrypoint: [""]
     pull_policy: if-not-present
   script:
-    - /kaniko/executor --context $CI_PROJECT_DIR/hadoop-service --dockerfile $CI_PROJECT_DIR/hadoop-service/Dockerfile --no-push --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTPS_PROXY --insecure-registry registry.cc-project.svc.cluster.local:5000 --skip-tls-verify-pull
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile.hadoop --no-push --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTPS_PROXY --insecure-registry registry.cc-project.svc.cluster.local:5000 --skip-tls-verify-pull
+    
 # ----------------- 3. DEPLOY -----------------
 deploy-services:
   stage: deploy
