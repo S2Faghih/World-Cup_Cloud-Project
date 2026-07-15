@@ -2,17 +2,18 @@ image:
   registry: "registry.docker.ir"
   image: "gitlab/gitlab-runner"
 
-gitlabUrl: "http://192.168.49.2:30880"
+gitlabUrl: "http://gitlab.cc-project.svc.cluster.local:8929"
 
-runnerRegistrationToken: "your-token"
+runnerRegistrationToken: "your token"
 
 runners:
   config: |
     [[runners]]
+      executor = "kubernetes"
       [runners.kubernetes]
         namespace = "cc-project"
         image = "registry.docker.ir/library/ubuntu:22.04"
-        privileged = true
+        privileged = false
         image_pull_policies = ["if-not-present"]
         allowed_pull_policies = ["if-not-present", "always", "never"]
         helper_image = "registry.docker.ir/gitlab/gitlab-runner-helper:x86_64-v16.11.2"

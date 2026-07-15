@@ -1,5 +1,5 @@
 # Use a lightweight Python base image
-FROM python:3.9-slim
+FROM registry.cc-project.svc.cluster.local:5000/python:3.10-slim
 
 # Set the working directory inside the container
 WORKDIR /app
